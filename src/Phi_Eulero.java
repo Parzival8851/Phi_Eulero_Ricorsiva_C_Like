@@ -6,6 +6,7 @@ public class Phi_Eulero
     public static final String INSERIRE_UN_INTERO = "Inserire un intero: ";
     public static final String RIFARE = "Vuoi rifare? ";
     public static ArrayList<Integer> divisori = new ArrayList<>();
+    public static ArrayList<Integer> fattoriPrimi = new ArrayList<>();
     public static int n=0;
     public static int p=0;
     public static int k=0;
@@ -20,11 +21,12 @@ public class Phi_Eulero
         {
             trovato=false;
             n=0;
-            p=0;
-            k=0;
-            a=0;
-            b=0;
+            p=1;
+            k=1;
+            a=1;
+            b=1;
             divisori.clear();
+            fattoriPrimi.clear();
             n=InputDati.leggiInteroNonNegativo(INSERIRE_UN_INTERO);
             System.out.println(phi(n));
 
@@ -46,57 +48,51 @@ public class Phi_Eulero
 
     private static int calcoloPhi(int n)
     {
-        calcoloDivisori(n);
         if (n ==1) return 1; // caso 1
-        else if(isPrimo(n))
+        else if(isPrimo(n)) // caso n è primo, funziona anche senza esplicitare questo caso, ma è più veloce siccome risparmio molti cicli
         {
             p= n;
             k=1;
             return 2;
-
         }
         else
         {
+            // calcolo divisori e fattori primi
+            calcoloDivisori(n);
+            primeFactor(n);
 
-                if(divisori.get(0).equals(divisori.get(divisori.size()-1)))
-                {
-                    trovato=true;
-                    p= divisori.get(0);
-                    boolean find = false;
-                    for (int j = 2; !find; j++)
-                    {
-                        if (Math.pow(p,j)==n)
-                        {
-                            find=true;
-                            k=j;
-                        }
-                    }
-                    return 3;
-                }
-
-
-
-            if(!trovato) // caso mcd
+            // cerco se n=p^k con p primo
+            /*ArrayList <Integer> tempDivisori = divisori; // uo una variabile temporanea sui divisori per poterli riutilizzare
+            tempDivisori.retainAll(divisori); //intersezione fattori primi e divisori
+            if (tempDivisori.size()==1) // se l'intersezione è un singolo numero
             {
-                for (int i = 0; i < divisori.size() && !trovato; i++)
+                p=tempDivisori.get(0); // vuol dire che tutti i divisori sono potenze dei valori dei fattori primi (che saranno tutti uguali), per questo l'intersezione è unica
+                k= fattoriPrimi.size(); // la potenza a cui è elevato p per fare n è il numero di fattori primi (8=2^3, divisiori di 8: 2,4)
+                return 3;
+            }*/
+            if (fattoriPrimi.get(0).equals(fattoriPrimi.get(fattoriPrimi.size()-1)))
+            {
+                p= fattoriPrimi.get(0);
+                k= fattoriPrimi.size();
+                return 3;
+            }
+            else // sono nel caso in cui phi(n)=phi(a)*phi(b) con mcd(a,b)=1
+            {
+                // non mi serve calcolare mcd, mi basta prendere un elemento qualsiasi tra i fattori primi,
+                // moltiplicarlo per tutte le sue potenze (a),
+                // e mettere il resto in b
+                a= fattoriPrimi.get(0);
+                b=1;
+                for (int i = 1; i < fattoriPrimi.size(); i++)
                 {
-                    for (int j = (divisori.size()-1) ; j > (i+1) && !trovato; j--)
-                    {
-                        int possibileProdotto= divisori.get(i)* divisori.get(j);
-                        if(possibileProdotto== n && mcd(divisori.get(i), divisori.get(j))==1)
-                        {
-                            a= divisori.get(i);
-                            b=divisori.get(j);
-                            trovato=true;
-                            return 4;
-
-                        }
-                    }
+                    if (fattoriPrimi.get(i).equals(fattoriPrimi.get(0))) a*= fattoriPrimi.get(i);
+                    else b*= fattoriPrimi.get(i);
                 }
+                // così facendo sono certo che a*b=n && mcd(a,b)=1, e non devo calcolarlo
+                return 4;
             }
 
         }
-        return -1; // errore
     }
 
     public static boolean isPrimo(int n)
@@ -121,6 +117,7 @@ public class Phi_Eulero
             return primo(n, y - 1);
      }
 
+    /*
     private static int mcd(int m, int n) {
         if (m == n) {
             return m;
@@ -129,27 +126,35 @@ public class Phi_Eulero
         } else {
             return mcd(m, n - m);
         }
-    }
+    }*/
 
+    /**
+     * escluso 1 e n
+     * @param n num da cui calcolo i divisori
+     */
     private static void calcoloDivisori(int n)
     {
-        if (!isPrimo(n))
-        {
-            for (int i = 2; i<(int) Math.floor(n/2)+1; i++)
-            {
-                if(n%i==0 && divisori.size()==0) // il primo divisore
-                    divisori.add(i);
-                else if(n%i==0 && n%divisori.get(0)==0)
-                {
-                    divisori.add(divisori.get(0));
-                }
-                else if(n%i==0)
-                {
-                    divisori.add(i);
-                }
-            }
-        }
+        for (int i = 2; i < Math.round((float) n/2)+1; i++)
+            if (n%i==0) divisori.add(i);
+    }
 
+    /**
+     *calcolo i fattori primi
+     * @param n numero su cui calcolare i fattori primi
+     */
+    private static void primeFactor(int n)
+    {
+        int p=2;
+        do
+        {
+            if (n%p==0)
+            {
+                fattoriPrimi.add(p);
+                n/=p;
+            }
+            else p++;
+        }while(n>=(p*p));
+        fattoriPrimi.add(n);
     }
 
 }
