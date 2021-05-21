@@ -12,21 +12,12 @@ public class Phi_Eulero
     public static int k=0;
     public static int a=0;
     public static int b=0;
-    public static boolean trovato=false;
 
 
     public static void main(String[] args)
     {
         do
         {
-            trovato=false;
-            n=0;
-            p=1;
-            k=1;
-            a=1;
-            b=1;
-            divisori.clear();
-            fattoriPrimi.clear();
             n=InputDati.leggiInteroNonNegativo(INSERIRE_UN_INTERO);
             System.out.println(phi(n));
 
@@ -37,13 +28,27 @@ public class Phi_Eulero
 
     private static int phi(int n)
     {
+        p=1;
+        k=1;
+        //a=1;
+        //b=1;
+        divisori.clear();
+        fattoriPrimi.clear();
         return switch (calcoloPhi(n)) {
             case 1 -> 1;
             case 2 -> n - 1;
             case 3 -> (int) ((p - 1) * Math.pow(p, k - 1));
-            case 4 -> phi(a) * phi(b);
+            case 4 -> casoMCD();
             default -> -1;
         };
+    }
+
+    private static int casoMCD()
+    {
+        int alpha=phi(a);
+        int beta = phi(b);
+        //phi(a) * phi(b);
+        return alpha*beta;
     }
 
     private static int calcoloPhi(int n)
